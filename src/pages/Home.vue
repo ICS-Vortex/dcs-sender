@@ -67,6 +67,13 @@
         components: {Loader},
         data() {
             return {
+                amqp: {
+                    host: null,
+                    port: null,
+                    username: null,
+                    password: null,
+                    queue: null
+                },
                 loading: false,
                 amqpConnection: null,
                 amqpConnected: false,
@@ -92,24 +99,45 @@
 
         },
         created() {
+            this.loadCredentialsData();
             this.reloadServers();
         },
         beforeDestroy() {
             this.stopWatchers();
         },
         methods: {
+            loadCredentialsData() {
+                const vm = this;
+                this.$axios.get(this.$apiUrl + '/instances/get-creadentials-data', {
+                    headers: {
+                        'X-DCS-SERIAL': settings.get('application.serial')
+                    }
+                }).then(response => {
+                    const {status, data} = response.data;
+                    if (status === 0) {
+                        vm.amqp.host = data.amqp.host;
+                        vm.amqp.port = data.amqp.port;
+                        vm.amqp.username = data.amqp.username;
+                        vm.amqp.password = data.amqp.password;
+                        vm.amqp.queue = data.amqp.queue;
+                    }
+                }).catch((err) => {
+                    log.error(err.toString());
+                    iziToast.error({title: 'Sender', message: 'Failed to get important data', position: 'topRight'});
+                });
+            },
             connectToAMQP(){
                 const vm = this;
                 vm.loading = true;
                 iziToast.info({title: 'Sender', message: 'Attempting to connect to AMQP service...', position: 'topRight'});
                 const options = {
-                    host: this.$amqpHost,
-                    port: this.$amqpPort,
-                    login: this.$amqpUsername,
-                    password: this.$amqpPassword,
+                    host: this.amqp.host,
+                    port: this.amqp.port,
+                    login: this.amqp.username,
+                    password: this.amqp.password,
                     connectionTimeout: 10000,
                     authMechanism: 'AMQPLAIN',
-                    vhost: this.$amqpVHost,
+                    vhost: '/',
                     noDelay: false,
                     ssl: {
                         enabled: false

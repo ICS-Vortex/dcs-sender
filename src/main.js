@@ -24,32 +24,15 @@ Vue.prototype.$environment = currentEnvironment;
 log.info(`Application works in ${currentEnvironment} mode`);
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-currentEnvironment = 'production';
-
 switch (currentEnvironment) {
     case 'development':
         Vue.prototype.$host = 'http://vfp.site';
-        Vue.prototype.$amqpVHost = '/';
-        Vue.prototype.$amqpHost = 'localhost';
-        Vue.prototype.$amqpPort = 5672;
-        Vue.prototype.$amqpUsername = 'vfp';
-        Vue.prototype.$amqpPassword = '62103128';
         break;
     case 'production':
         Vue.prototype.$host = 'https://vfpteam.com';
-        Vue.prototype.$amqpVHost = '/';
-        Vue.prototype.$amqpHost = 'vfpteam.com';
-        Vue.prototype.$amqpPort = 5672;
-        Vue.prototype.$amqpUsername = 'vfpteam.com';
-        Vue.prototype.$amqpPassword = 'Csp0tFlight!';
         break;
     default:
         Vue.prototype.$host = 'http://vfp.site';
-        Vue.prototype.$amqpVHost = '/';
-        Vue.prototype.$amqpHost = 'localhost';
-        Vue.prototype.$amqpPort = 5672;
-        Vue.prototype.$amqpUsername = 'vfp';
-        Vue.prototype.$amqpPassword = '62103128';
 }
 Vue.prototype.$apiUrl = Vue.prototype.$host + '/api';
 
