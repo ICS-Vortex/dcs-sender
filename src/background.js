@@ -8,7 +8,7 @@ import {
     createProtocol
 } from 'vue-cli-plugin-electron-builder/lib';
 const isDevelopment = process.env.NODE_ENV !== 'production';
-let win;
+let win, updatesInterval;
 
 protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: {secure: true, standard: true}}]);
 
@@ -35,7 +35,7 @@ function createWindow() {
         createProtocol('app');
         win.loadURL('app://./index.html');
     }
-
+    win.webContents.openDevTools(); // TODO remove
     win.on('closed', () => {
         win = null;
     })
@@ -56,7 +56,7 @@ app.on('activate', () => {
 
 app.on('ready', () => {
     createWindow();
-    setInterval(() => {
+    updatesInterval = setInterval(() => {
         autoUpdater.checkForUpdatesAndNotify();
     }, 1000 * 15);
 });
@@ -85,12 +85,8 @@ autoUpdater.on('checking-for-update', () => {
 })
 
 autoUpdater.on('update-available', () => {
-    sendStatusToWindow('Update available.');
-    dialog.showMessageBox({
-        type: 'info',
-        message: 'Update available',
-        title: 'DCS Sender Updater',
-    });
+    clearInterval(updatesInterval);
+   autoUpdater.downloadUpdate();
 })
 
 autoUpdater.on('update-not-available', () => {
@@ -107,5 +103,15 @@ autoUpdater.on('download-progress', () => {
     // sendStatusToWindow(log_message);
 })
 autoUpdater.on('update-downloaded', () => {
-    sendStatusToWindow('Update downloaded');
+    const options = {
+        type: 'info',
+        message: 'Update available. Do you want to update sender?',
+        title: 'DCS Sender Updater',
+        buttons: ["Yes","No","Cancel"],
+    };
+    dialog.showMessageBox(options, (res) => {
+        if (res === 0) {
+            autoUpdater.quitAndInstall();
+        }
+    });
 });

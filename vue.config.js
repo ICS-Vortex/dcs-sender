@@ -23,7 +23,7 @@ module.exports = {
           {
             provider: "github",
             owner: "ICS-Vortex",
-            repo: "electron-vue",
+            repo: "dcs-sender",
             releaseType: "draft",
             channel: "latest"
           }
