@@ -1,11 +1,12 @@
 'use strict';
 
-import {app, protocol, BrowserWindow, Menu} from 'electron';
+import {app, protocol, BrowserWindow, dialog } from 'electron';
+import log from 'electron-log';
+import { autoUpdater } from "electron-updater";
 import path from 'path';
 import {
     createProtocol
 } from 'vue-cli-plugin-electron-builder/lib';
-
 const isDevelopment = process.env.NODE_ENV !== 'production';
 let win;
 
@@ -53,8 +54,11 @@ app.on('activate', () => {
     }
 });
 
-app.on('ready', async () => {
+app.on('ready', () => {
     createWindow();
+    setInterval(() => {
+        autoUpdater.checkForUpdatesAndNotify();
+    }, 1000 * 15);
 });
 
 if (isDevelopment) {
@@ -71,23 +75,37 @@ if (isDevelopment) {
     }
 }
 
-const template = [
-    {
-        label: 'Application',
-        submenu: [
-            {
-                label: 'Reload',
-                click: () => {
-                    app.relaunch();
-                    app.exit();
-                },
-            },
-            { role: 'undo' },
-            { role: 'redo' },
-            { role: 'quit' }
-        ]
-    },
-];
+function sendStatusToWindow(text) {
+    log.info(text);
+    win.webContents.send('message', text);
+}
 
-const menu = Menu.buildFromTemplate(template);
-Menu.setApplicationMenu(menu);
+autoUpdater.on('checking-for-update', () => {
+    sendStatusToWindow('Checking for update...');
+})
+
+autoUpdater.on('update-available', () => {
+    sendStatusToWindow('Update available.');
+    dialog.showMessageBox({
+        type: 'info',
+        message: 'Update available',
+        title: 'DCS Sender Updater',
+    });
+})
+
+autoUpdater.on('update-not-available', () => {
+    sendStatusToWindow('Update not available.');
+})
+autoUpdater.on('error', (err) => {
+    sendStatusToWindow('Error in auto-updater. ' + err);
+})
+autoUpdater.on('download-progress', () => {
+    //progressObj
+    // let log_message = "Download speed: " + progressObj.bytesPerSecond;
+    // log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
+    // log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
+    // sendStatusToWindow(log_message);
+})
+autoUpdater.on('update-downloaded', () => {
+    sendStatusToWindow('Update downloaded');
+});

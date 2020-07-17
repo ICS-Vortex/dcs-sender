@@ -6,8 +6,28 @@ module.exports = {
     electronBuilder: {
       builderOptions: {
         win: {
-          icon: './src/assets/logo.png'
-        }
+          icon: './src/assets/logo.png',
+          target: [
+            {
+              target: "nsis",
+              arch: ["x64", "ia32"]
+            }
+          ]
+        },
+        nsis: {
+          oneClick: false,
+          perMachine: true,
+          allowToChangeInstallationDirectory: true
+        },
+        publish: [
+          {
+            provider: "github",
+            owner: "ICS-Vortex",
+            repo: "electron-vue",
+            releaseType: "draft",
+            channel: "latest"
+          }
+        ]
       }
     }
   }

@@ -4,7 +4,7 @@
             <div class="d-flex align-center">
                 <v-img alt="Sender Logo" class="shrink mr-2" contain src="@/assets/logo.png"
                        transition="scale-transition" width="40"/>
-                <div class="shrink mt-1 app-title app-font">DCS Stats Sender</div>
+                <div class="shrink mt-1 app-title app-font">DCS Sender</div>
             </div>
 
             <v-spacer/>
