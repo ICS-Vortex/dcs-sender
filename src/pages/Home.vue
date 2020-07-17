@@ -1,0 +1,401 @@
+<template>
+    <div>
+        <Loader :is-loading="loading"></Loader>
+        <v-card>
+            <v-card-title>Transferring UI</v-card-title>
+            <v-card-text>
+                <v-row>
+                    <v-col>
+                        <v-progress-linear :active="sending" color="primary" indeterminate rounded height="8"/>
+                    </v-col>
+                </v-row>
+                <v-row>
+                    <v-col cols="12" sm="4" md="4">
+                        <v-btn block :disabled="sending" left color="primary" @click="startSender">
+                            Start sender
+                            <v-icon right dark>mdi-play-speed</v-icon>
+                        </v-btn>
+                    </v-col>
+                    <v-col cols="12" sm="4" md="4">
+                        <v-btn block :disabled="!sending" right dark color="red" @click="stopSender">
+                            Stop sender
+                            <v-icon right dark>mdi-stop-circle</v-icon>
+                        </v-btn>
+                    </v-col>
+                    <v-col cols="12" sm="4" md="4">
+                        <v-btn class="primary" block @click="openLogs">
+                            Open log file
+                            <v-icon right dark>mdi-view-list-outline</v-icon>
+                        </v-btn>
+                    </v-col>
+                </v-row>
+                <v-simple-table :height="height">
+                    <thead>
+                    <tr>
+                        <th class="text-left">Time</th>
+                        <th class="text-left">Message</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="(message, i) in messages" :key="i"
+                        :class="message.success === false ? 'red white--text' : ''">
+                        <td>{{new Date | moment('YYYY-MM-DD hh:hh:ss')}}</td>
+                        <td><b>{{message.text}}</b></td>
+                    </tr>
+                    <tr id="last-row">
+                        <td colspan="2"/>
+                    </tr>
+                    </tbody>
+                </v-simple-table>
+            </v-card-text>
+        </v-card>
+    </div>
+</template>
+
+<script>
+    import settings from 'electron-settings';
+    import fs from 'fs';
+    import iziToast from 'izitoast';
+    import {shell} from 'electron';
+    import log from 'electron-log';
+    import Chokidar from 'chokidar';
+    import amqp from 'amqp';
+    import Loader from "../components/Loader";
+
+    export default {
+        name: 'home',
+        components: {Loader},
+        data() {
+            return {
+                loading: false,
+                amqpConnection: null,
+                amqpConnected: false,
+                startBtnDisabled: false,
+                stopBtnDisabled: true,
+                servers: [],
+                dense: false,
+                fixedHeader: false,
+                height: 420,
+                environment: null,
+                apiUrl: null,
+                db: null,
+                settings: [],
+                timer: null,
+                interval: 15000,
+                stream: null,
+                senderWorks: false,
+                sending: false,
+                messages: [],
+            }
+        },
+        mounted() {
+
+        },
+        created() {
+            this.reloadServers();
+        },
+        beforeDestroy() {
+            this.stopWatchers();
+        },
+        methods: {
+            connectToAMQP(){
+                const vm = this;
+                vm.loading = true;
+                iziToast.info({title: 'Sender', message: 'Attempting to connect to AMQP service...', position: 'topRight'});
+                const options = {
+                    host: this.$amqpHost,
+                    port: this.$amqpPort,
+                    login: this.$amqpUsername,
+                    password: this.$amqpPassword,
+                    connectionTimeout: 10000,
+                    authMechanism: 'AMQPLAIN',
+                    vhost: this.$amqpVHost,
+                    noDelay: false,
+                    ssl: {
+                        enabled: false
+                    }
+                };
+                const connectionOptions = {
+                    reconnect: false,
+                };
+                vm.amqpConnection = amqp.createConnection(options, connectionOptions);
+
+                vm.amqpConnection.on('error', (e) => {
+                    vm.loading = false;
+                    log.log("Error from amqp: ", e);
+                    vm.stopSender();
+                    vm.appendToTable({text: 'Failed to connect to AMQP service'}, false, true);
+                });
+
+                vm.amqpConnection.on('ready', () => {
+                    vm.loading = false;
+                    iziToast.success({title: 'Sender', message: 'Connected to AMQP service', position: 'topRight'});
+                    vm.amqpConnected = true;
+                    vm.startSender();
+                    log.info(`AMQP - Connected to ${options.host}:${options.port}`)
+                });
+            },
+            reloadServers() {
+                const vm = this;
+                let serial = settings.get('application.serial');
+                const headers = {
+                    'X-DCS-SERIAL': serial
+                };
+                const url = this.$apiUrl + `/instances/get-servers`;
+                log.info(`Pulling servers data from ${url} url...`);
+                this.$axios.get(url, {headers: headers})
+                    .then(response => {
+                        vm.servers = response.data;
+                        log.info(`Server info loaded. Found ${vm.servers.length} servers`);
+                        vm.connectToAMQP();
+                    })
+                    .catch(error => {
+                        log.error(error.toString());
+                    });
+            },
+            appendToTable(message, success = true, show = false) {
+                message.success = success;
+                this.messages.unshift(message);
+                if (show) {
+                    const data = {
+                        title: 'Sender',
+                        message: message.text,
+                        position: 'topRight'
+                    };
+                    if (success) {
+                        iziToast.info(data);
+                    }else {
+                        iziToast.error(data)
+                    }
+                }
+            },
+            openLogs() {
+                shell.openItem(settings.get('application.logs_path'));
+            },
+            isJsonFile(file) {
+                return file.includes('.json');
+            },
+            ignoreFile(file) {
+                return file.includes('[0].json');
+            },
+            isNetworkAvailable() {
+                return window.navigator.onLine;
+            },
+            startIsAllowed() {
+                const serial = settings.get('application.serial', null);
+                if (serial === null) {
+                    log.error('Serial number is missing');
+                    iziToast.error({title: 'Sender', message: 'Serial number is missing', position: 'topRight'});
+                    return false;
+                }
+
+                if (this.amqpConnected === false) {
+                    log.error('Sender is not connected to AMQP service');
+                    iziToast.error({title: 'Sender', message: 'Sender is not connected to AMQP service', position: 'topRight'});
+                    return false;
+                }
+
+                if (this.servers.length === 0) {
+                    return false;
+                }
+
+                return true;
+            },
+            startSender() {
+                if (!this.isNetworkAvailable) {
+                    this.stopSender();
+                    return false;
+                }
+                log.info('Starting sender');
+                if (!this.startIsAllowed()) {
+                    log.error('Failed to start sender');
+                    return;
+                }
+                this.messages = [];
+                log.info('Sender started. Initializing options and sendData interval...');
+                this.sending = true;
+                this.startBtnDisabled = true;
+                this.stopBtnDisabled = false;
+                log.info('Done');
+                this.startWatchers();
+            },
+            stopSender(notify = false, server = null) {
+                this.sending = false;
+                this.startBtnDisabled = false;
+                this.stopBtnDisabled = true;
+                this.stopWatchers();
+                if (notify === true && server !== null) {
+                    log.info('Notifying server admin about stopped sender...');
+                    this.sendEmail(server, '[DCSSender] Sender stopped', 'Sender stopped. Please, check it.');
+                    log.info('Notification sent.');
+                }
+                log.info('Sender stopped');
+            },
+            getEventFromFile(file) {
+                if (!fs.existsSync(file)) {
+                    return null;
+                }
+                try {
+                    let content = fs.readFileSync(file, {encoding: 'utf-8'});
+                    let fileContent = content.toString();
+                    return JSON.parse(fileContent);
+                } catch (e) {
+                    log.error(e.toString());
+                    return null;
+                }
+            },
+            sendEvent(server, event) {
+                if (!event.event) {
+                    this.appendToTable({
+                        text: `Invalid JSON detected`,
+                        success: false,
+                    }, false, true);
+                    return;
+                }
+                log.info('Sending ' + event.event.toUpperCase() + ' event data');
+                event.server = {identifier: server.identifier};
+                const content = JSON.stringify(event);
+                this.amqpConnection.publish('json_messages', content)
+            },
+            sendSrsData(server) {
+                let srsFile = server.srsFile;
+                if (srsFile === null) {
+                    log.info('SRS file is not set.');
+                    return false;
+                }
+                srsFile = srsFile.toString();
+                try {
+                    let content = JSON.parse(fs.readFileSync(srsFile, {encoding: 'utf-8'}));
+                    content.event = 'srs';
+                    content.time = new Date().toISOString().slice(0, 19).replace('T', ' ');
+                    content.server = {
+                        identifier: server.identifier,
+                    };
+                    this.amqpConnection.publish('json_messages', content)
+                    log.info('SRS event done');
+                    this.messages.unshift({text: 'SRS event done'});
+                } catch (e) {
+                    log.error(e.toString());
+                }
+            },
+            startWatchers() {
+                for (let i = 0; i < this.servers.length; i++) {
+                    if (this.servers[i].active === false) {
+                        this.messages.unshift({
+                            text: `Server ${this.servers[i].name} is disabled`,
+                        });
+                        continue;
+                    }
+                    log.info(`Processing server ${this.servers[i].name}`);
+                    const srsFile = this.servers[i].srsFile;
+                    const folder = this.servers[i].reportsLocation;
+                    if (folder === null) {
+                        this.messages.unshift({
+                            text: `Server ${this.servers[i].name} have no folder`,
+                            success: false,
+                        });
+                        continue;
+                    }
+                    if (fs.existsSync(folder)) {
+                        this.servers[i].jsonWatcher = Chokidar.watch(folder, {
+                            interval: 15 * 1000,
+                            persistent: true,
+                        });
+                        this.servers[i].jsonWatcher
+                            .on('add', (path) => {
+                                log.info('Detected ne JSON file: ', path);
+                                if (this.isJsonFile(path)) {
+                                    if (!this.ignoreFile(path)) {
+                                        let event = this.getEventFromFile(path);
+                                        if (event !== null) {
+                                            this.sendEvent(this.servers[i], event);
+                                            this.deleteFile(path);
+                                        } else {
+                                            log.error(`Failed to read file ${path}`);
+                                            this.appendToTable({
+                                                text: `Failed to read file ${path}`,
+                                                success: false,
+                                            });
+                                            this.deleteFile(path);
+                                            log.info(`File ${path} deleted`);
+                                        }
+                                    } else {
+                                        this.deleteFile(path);
+                                    }
+                                }
+                                if (fs.existsSync(srsFile)) {
+                                    this.sendSrsData(this.servers[i]);
+                                }
+                            });
+                    } else {
+                        this.appendToTable({
+                            text: `Folder ${folder} does not exists!`,
+                            success: false,
+                        }, false, true);
+                        log.error(`Folder ${folder} does not exists!`);
+                        this.stopSender();
+                        return;
+                    }
+
+
+                }
+            },
+            stopWatchers() {
+                for (let i = 0; i < this.servers.length; i++) {
+                    if (this.servers[i].active === false) {
+                        continue;
+                    }
+                    if (this.servers[i].jsonWatcher !== null && this.servers[i].jsonWatcher !== undefined) {
+                        this.servers[i].jsonWatcher.unwatch(this.servers[i].reportsLocation);
+                        this.servers[i].jsonWatcher = null;
+                    }
+                    if (this.servers[i].srsWatcher !== null && this.servers[i].srsWatcher !== undefined) {
+                        this.servers[i].srsWatcher.unwatch(this.servers[i].srsFile);
+                        this.servers[i].srsWatcher = null;
+                    }
+                }
+            },
+            deleteFile(file) {
+                try {
+                    log.info('Deleting file: ' + file);
+                    fs.unlinkSync(file);
+                    log.info('Done');
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            },
+            sendEmail(server, subject, message) {
+                const url = this.$apiUrl + '/open/emails/send';
+                log.info('Sending email request to url: ' + url);
+                let recipients = [server.email];
+                let data = {
+                    subject: subject,
+                    body: message,
+                    recipients: recipients
+                };
+                this.axios.post(url, JSON.stringify(data)).then(() => {
+                    log.info('Request sent.');
+                    iziToast.info({
+                        title: 'System',
+                        message: 'Notification email sent',
+                        position: 'topRight'
+                    });
+                }).catch((err) => {
+                    log.error(err.toString());
+                });
+            },
+        },
+    }
+</script>
+
+<style lang="scss" scoped>
+    .v-simple-table {
+
+    }
+
+    .md-scrollbar {
+        max-height: 450px;
+        overflow: auto;
+    }
+</style>

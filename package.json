@@ -1,0 +1,76 @@
+{
+  "name": "dcs-stats-sender",
+  "description": "Statistics transfer app",
+  "license": "MIT",
+  "author": "VFP Team",
+  "version": "1.4.8",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint",
+    "electron:build": "vue-cli-service electron:build",
+    "electron:serve": "vue-cli-service electron:serve",
+    "postinstall": "electron-builder install-app-deps",
+    "postuninstall": "electron-builder install-app-deps"
+  },
+  "main": "background.js",
+  "dependencies": {
+    "amqp": "^0.2.7",
+    "aws-sdk": "^2.713.0",
+    "chokidar": "^3.4.1",
+    "core-js": "^3.6.5",
+    "electron-download-manager": "^2.1.2",
+    "js-async-queue": "^1.0.6",
+    "node-pre-gyp": "^0.14.0",
+    "vue": "^2.6.10",
+    "vue-moment": "^4.1.0",
+    "vue-router": "^3.3.4",
+    "vuetify": "^2.3.4"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "^4.4.6",
+    "@vue/cli-plugin-eslint": "^4.4.6",
+    "@vue/cli-plugin-router": "^4.4.6",
+    "@vue/cli-service": "^4.4.6",
+    "axios": "^0.19.2",
+    "babel-eslint": "^10.1.0",
+    "electron": "^6.1.12",
+    "electron-builder": "^21.2.0",
+    "electron-log": "^3.0.9",
+    "electron-settings": "^3.2.0",
+    "electron-updater": "^4.3.1",
+    "eslint": "^5.16.0",
+    "eslint-plugin-vue": "^5.0.0",
+    "internet-available": "^1.0.0",
+    "izitoast": "^1.4.0",
+    "portscanner": "^2.2.0",
+    "sass": "^1.26.10",
+    "sass-loader": "^8.0.2",
+    "sqlite3": "^4.2.0",
+    "vue-cli-plugin-electron-builder": "^1.4.6",
+    "vue-cli-plugin-vuetify": "^2.0.6",
+    "vue-izitoast": "^1.2.1",
+    "vue-template-compiler": "^2.6.10",
+    "vuelidate": "^0.7.5",
+    "vuetify-loader": "^1.6.0"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended"
+    ],
+    "rules": {},
+    "parserOptions": {
+      "parser": "babel-eslint"
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions"
+  ]
+}

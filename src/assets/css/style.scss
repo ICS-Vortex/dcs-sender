@@ -1,0 +1,22 @@
+@import url("https://fonts.googleapis.com/css?family=Orbitron");
+
+$color-pack: false;
+
+@import '~vuetify/src/styles/main.sass';
+
+.app-font{
+  font-family: "Orbitron", sans-serif !important;
+}
+
+.app-title{
+  font-weight: bold;
+  font-size: 24px;
+}
+
+.menu-btn{
+  font-family: "Orbitron", sans-serif;
+}
+
+.menu-btn:hover {
+  color: cyan;
+}
