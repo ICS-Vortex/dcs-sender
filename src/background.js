@@ -48,7 +48,7 @@ app.on('window-all-closed', () => {
     }
 });
 
-app.on('activate', () => {
+app.on('activate', async () => {
     if (win === null) {
         createWindow();
     }
