@@ -22,6 +22,7 @@ module.exports = {
         publish: [
           {
             provider: "github",
+            private: true,
             owner: "ICS-Vortex",
             repo: "dcs-sender",
             releaseType: "draft",
