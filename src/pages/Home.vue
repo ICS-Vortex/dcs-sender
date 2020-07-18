@@ -29,7 +29,7 @@
                         </v-btn>
                     </v-col>
                 </v-row>
-                <v-simple-table :height="height">
+                <v-simple-table height="420">
                     <thead>
                     <tr>
                         <th class="text-left">Time</th>
@@ -61,75 +61,71 @@
     import Chokidar from 'chokidar';
     import amqp from 'amqp';
     import Loader from "../components/Loader";
+    import {mapState, mapActions} from 'vuex';
 
     export default {
         name: 'home',
         components: {Loader},
+        computed: {
+            ...mapState(['amqp', 'serial']),
+        },
         data() {
             return {
-                amqp: {
-                    host: null,
-                    port: null,
-                    username: null,
-                    password: null,
-                    queue: null
-                },
                 loading: false,
                 amqpConnection: null,
                 amqpConnected: false,
                 startBtnDisabled: false,
                 stopBtnDisabled: true,
                 servers: [],
-                dense: false,
-                fixedHeader: false,
-                height: 420,
-                environment: null,
-                apiUrl: null,
-                db: null,
-                settings: [],
                 timer: null,
                 interval: 15000,
-                stream: null,
-                senderWorks: false,
                 sending: false,
                 messages: [],
             }
         },
         mounted() {
-
+            this.reloadServers();
         },
         created() {
             this.loadCredentialsData();
-            this.reloadServers();
         },
         beforeDestroy() {
             this.stopWatchers();
         },
         methods: {
+            ...mapActions(['setAmqp']),
             loadCredentialsData() {
-                const vm = this;
-                this.$axios.get(this.$apiUrl + '/instances/get-creadentials-data', {
+                this.$axios.get(this.$apiUrl + '/instances/get-credentials-data', {
                     headers: {
-                        'X-DCS-SERIAL': settings.get('application.serial')
+                        'X-DCS-SERIAL': this.serial
                     }
                 }).then(response => {
                     const {status, data} = response.data;
                     if (status === 0) {
-                        vm.amqp.host = data.amqp.host;
-                        vm.amqp.port = data.amqp.port;
-                        vm.amqp.username = data.amqp.username;
-                        vm.amqp.password = data.amqp.password;
-                        vm.amqp.queue = data.amqp.queue;
+                        this.setAmqp(data.amqp);
+                    } else {
+                        iziToast.error({
+                            title: 'Sender',
+                            message: 'Failed to get important data',
+                            position: 'topRight'
+                        });
                     }
                 }).catch((err) => {
                     log.error(err.toString());
                     iziToast.error({title: 'Sender', message: 'Failed to get important data', position: 'topRight'});
                 });
             },
-            connectToAMQP(){
+            connectToAMQP() {
                 const vm = this;
+                if (this.amqp === null) {
+                    return;
+                }
                 vm.loading = true;
-                iziToast.info({title: 'Sender', message: 'Attempting to connect to AMQP service...', position: 'topRight'});
+                iziToast.info({
+                    title: 'Sender',
+                    message: 'Attempting to connect to AMQP service...',
+                    position: 'topRight'
+                });
                 const options = {
                     host: this.amqp.host,
                     port: this.amqp.port,
@@ -223,11 +219,7 @@
                     return false;
                 }
 
-                if (this.servers.length === 0) {
-                    return false;
-                }
-
-                return true;
+                return this.servers.length !== 0;
             },
             startSender() {
                 if (!this.isNetworkAvailable) {

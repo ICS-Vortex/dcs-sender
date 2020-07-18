@@ -1,25 +1,28 @@
 'use strict';
 
-import {app, protocol, BrowserWindow, dialog } from 'electron';
+import {app, protocol, BrowserWindow, dialog, nativeImage} from 'electron';
 import log from 'electron-log';
 import { autoUpdater } from "electron-updater";
 import path from 'path';
 import {
     createProtocol
 } from 'vue-cli-plugin-electron-builder/lib';
+
 const isDevelopment = process.env.NODE_ENV !== 'production';
 let win, updatesInterval;
 
 protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: {secure: true, standard: true}}]);
 
 function createWindow() {
+    let image = nativeImage.createFromPath(__dirname + '/public/logo.png');
+    image.setTemplateImage(true);
     let options = {
         width: 1200,
         height: 600,
-        icon:  path.join(__dirname, '/assets/logo.png'),
+        icon: image,
         webPreferences: {
-            devTools: true,
-            nodeIntegration: true
+            nodeIntegration: true,
+            enableRemoteModule: true
         }
     };
 
@@ -27,6 +30,7 @@ function createWindow() {
         options.webPreferences.devTools = true;
     }
     win = new BrowserWindow(options);
+
     win.setMenu(null);
     if (process.env.WEBPACK_DEV_SERVER_URL) {
         win.loadURL(process.env.WEBPACK_DEV_SERVER_URL);
@@ -35,7 +39,6 @@ function createWindow() {
         createProtocol('app');
         win.loadURL('app://./index.html');
     }
-    win.webContents.openDevTools(); // TODO remove
     win.on('closed', () => {
         win = null;
     })

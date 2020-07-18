@@ -6,13 +6,13 @@ module.exports = {
     electronBuilder: {
       builderOptions: {
         win: {
-          icon: './src/assets/logo.png',
-          target: [
-            {
-              target: "nsis",
-              arch: ["x64", "ia32"]
-            }
-          ]
+            icon: './public/logo.png',
+            target: [
+                {
+                    target: "nsis",
+                    arch: ["x64", "ia32"]
+                }
+            ]
         },
         nsis: {
           oneClick: false,

@@ -3,7 +3,7 @@
   "description": "Statistics transfer app",
   "license": "MIT",
   "author": "VFP Team",
-  "version": "1.4.9",
+  "version": "1.4.10",
   "private": true,
   "scripts": {
     "lint": "vue-cli-service lint",
@@ -25,13 +25,15 @@
     "vue": "^2.6.10",
     "vue-moment": "^4.1.0",
     "vue-router": "^3.3.4",
-    "vuetify": "^2.3.4"
+    "vuetify": "^2.3.4",
+    "vuex": "^3.5.1"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^4.4.6",
     "@vue/cli-plugin-eslint": "^4.4.6",
     "@vue/cli-plugin-router": "^4.4.6",
     "@vue/cli-service": "^4.4.6",
+    "@vue/composition-api": "^1.0.0-beta.4",
     "axios": "^0.19.2",
     "babel-eslint": "^10.1.0",
     "electron": "^9.1.0",
