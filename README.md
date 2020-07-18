@@ -17,7 +17,7 @@ npm run build
 
 ### Publish source code and exe file to Github repo
 ```
-npm run publish
+npm run publish 
 ```
 
 
