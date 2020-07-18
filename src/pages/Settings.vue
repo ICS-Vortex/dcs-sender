@@ -11,69 +11,75 @@
                         <v-container>
                             <v-row>
                                 <v-col cols="12" sm="3" md="3">
-                                    <v-switch dark v-model="server.active" class="ma-2" label="Data transfer" />
+                                    <v-switch dark v-model="server.active" class="ma-2" label="Data transfer"/>
                                 </v-col>
                                 <v-col cols="12" sm="3" md="3">
-                                    <v-switch dark v-model="server.showMap" class="ma-2" label="Map" />
+                                    <v-switch dark v-model="server.showMap" class="ma-2" label="Map"/>
                                 </v-col>
                                 <v-col cols="12" sm="3" md="3">
-                                    <v-switch dark v-model="server.sendDiscordNotifications" class="ma-2" label="Discord notifications" />
+                                    <v-switch dark v-model="server.sendDiscordNotifications" class="ma-2"
+                                              label="Discord notifications"/>
                                 </v-col>
                                 <v-col cols="12" sm="3" md="3">
-                                    <v-switch dark v-model="server.sendDiscordServerNotifications" class="ma-2" label="Server notifications" />
+                                    <v-switch dark v-model="server.sendDiscordServerNotifications" class="ma-2"
+                                              label="Server notifications"/>
                                 </v-col>
                                 <v-col cols="12" sm="4" md="4">
-                                    <v-switch dark v-model="server.sendDiscordFlightNotifications" class="ma-2" label="Flight notifications" />
+                                    <v-switch dark v-model="server.sendDiscordFlightNotifications" class="ma-2"
+                                              label="Flight notifications"/>
                                 </v-col>
                                 <v-col cols="12" sm="4" md="4">
-                                    <v-switch dark v-model="server.sendDiscordCombatNotifications" class="ma-2" label="Combat notifications" />
+                                    <v-switch dark v-model="server.sendDiscordCombatNotifications" class="ma-2"
+                                              label="Combat notifications"/>
                                 </v-col>
                                 <v-col cols="12" sm="4" md="4">
-                                    <v-switch dark v-model="server.sendDiscordFriendlyFireNotifications" class="ma-2" label="Friendly fire notifications" />
+                                    <v-switch dark v-model="server.sendDiscordFriendlyFireNotifications" class="ma-2"
+                                              label="Friendly fire notifications"/>
                                 </v-col>
                                 <v-col cols="12" sm="6" md="4">
-                                    <v-text-field v-model="server.name" label="Server name" required />
+                                    <v-text-field v-model="server.name" label="Server name" required/>
                                 </v-col>
                                 <v-col cols="12" sm="6" md="4">
-                                    <v-text-field v-model="server.email" label="Admin email" required />
+                                    <v-text-field v-model="server.email" label="Admin email" required/>
                                 </v-col>
                                 <v-col cols="12" sm="6" md="4">
-                                    <v-text-field v-model="server.discordBotToken" label="Discord Bot Token" />
+                                    <v-text-field v-model="server.discordBotToken" label="Discord Bot Token"/>
                                 </v-col>
                                 <v-col cols="12" sm="6" md="4">
-                                    <v-text-field v-model="server.discordServerId" label="Discord server ID (for Widget)" />
+                                    <v-text-field v-model="server.discordServerId"
+                                                  label="Discord server ID (for Widget)"/>
                                 </v-col>
                                 <v-col cols="12" sm="6" md="4">
-                                    <v-text-field v-model="server.discordWebHook" label="Discord webhook URL" />
+                                    <v-text-field v-model="server.discordWebHook" label="Discord webhook URL"/>
                                 </v-col>
                                 <v-col cols="12" sm="6" md="4">
-                                    <v-text-field v-model="server.address" label="Server address" required />
+                                    <v-text-field v-model="server.address" label="Server address" required/>
                                 </v-col>
                                 <v-col cols="12" sm="6" md="4">
-                                    <v-text-field v-model="server.port" label="Server port" required />
+                                    <v-text-field v-model="server.port" label="Server port" required/>
                                 </v-col>
                                 <v-col cols="12" sm="6" md="4">
-                                    <v-text-field v-model="server.reportsLocation" label="Reports location" required />
+                                    <v-text-field v-model="server.reportsLocation" label="Reports location" required/>
                                 </v-col>
                                 <v-col cols="12" sm="6" md="4">
-                                    <v-text-field v-model="server.teamSpeakAddress" label="TS address" />
+                                    <v-text-field v-model="server.teamSpeakAddress" label="TS address"/>
                                 </v-col>
                                 <v-col cols="12" sm="6" md="4">
-                                    <v-text-field v-model="server.srsAddress" label="SRS address" />
+                                    <v-text-field v-model="server.srsAddress" label="SRS address"/>
                                 </v-col>
                                 <v-col cols="12" sm="6" md="4">
-                                    <v-text-field v-model="server.srsFile" label="SRS file" />
+                                    <v-text-field v-model="server.srsFile" label="SRS file"/>
                                 </v-col>
                             </v-row>
                         </v-container>
                     </v-card-text>
 
-                    <v-divider />
+                    <v-divider/>
 
                     <v-card-actions>
                         <v-btn @click="findSrsFile">Set SRS file</v-btn>
                         <v-btn @click="findSrsFolder">Set reports folder</v-btn>
-                        <v-spacer />
+                        <v-spacer/>
                         <v-btn dark color="secondary" @click="saveInstance">Save</v-btn>
                         <v-btn color="error" @click="closeDialog">Close</v-btn>
                     </v-card-actions>
@@ -88,7 +94,6 @@
                         <v-icon color="light-blue" @click="reloadServers()">mdi-refresh</v-icon>
                     </v-btn>
                 </h2>
-                <Loader :is-loading="loading" />
             </v-col>
         </v-row>
         <v-row>
@@ -102,10 +107,11 @@
                             </v-list-item-content>
                         </v-list-item>
                         <v-card-actions>
-                            <v-chip v-if="server.active === true" class="ma-2" color="cyan" text-color="white">Active</v-chip>
+                            <v-chip v-if="server.active === true" class="ma-2" color="cyan" text-color="white">Active
+                            </v-chip>
                             <v-chip v-else class="ma-2" color="grey" text-color="white">Disabled</v-chip>
-                            <v-spacer />
-<!--                            <v-btn icon @click="editServer(server)"><v-icon>mdi-pencil</v-icon></v-btn>-->
+                            <v-spacer/>
+                            <!--                            <v-btn icon @click="editServer(server)"><v-icon>mdi-pencil</v-icon></v-btn>-->
                         </v-card-actions>
                     </v-card>
                 </v-hover>
@@ -115,16 +121,15 @@
 </template>
 
 <script>
-    import settings from 'electron-settings';
     import iziToast from 'izitoast';
     import {remote} from 'electron';
     import log from 'electron-log';
-    import Loader from "../components/Loader";
+    import {mapState, mapActions} from 'vuex';
 
     export default {
         name: 'Settings',
-        components: {Loader},
-        data (){
+        computed: {...mapState(['serial'])},
+        data() {
             return {
                 server: {
                     id: null,
@@ -149,7 +154,6 @@
                     reportsLocation: null,
                 },
                 servers: [],
-                loading: true,
                 dialog: false,
                 edit: false,
                 userSaved: false,
@@ -164,21 +168,23 @@
             clearTimeout(this.timer);
         },
         methods: {
+            ...mapActions(["startLoading", "stopLoading"]),
             reloadServers() {
                 const vm = this;
                 this.servers = [];
-                this.loading = true;
+                this.startLoading();
                 const url = this.$apiUrl + `/instances/get-servers`;
                 const headers = {
-                    'X-DCS-SERIAL': settings.get('application.serial'),
+                    'X-DCS-SERIAL': this.serial,
                 };
-                this.$axios.get(url,{headers: headers})
-                    .then(response => {
-                        vm.loading = false;
-                        vm.servers = response.data;
-                    })
+                this.$axios.get(url, {headers: headers}).then(response => {
+                    vm.servers = response.data;
+                })
                     .catch(error => {
                         log.error(error.toString());
+                    })
+                    .finally(() => {
+                        this.stopLoading();
                     });
             },
             editServer(server) {
@@ -204,7 +210,7 @@
                 this.dialog = true;
             },
             saveInstance() {
-                this.loading = true;
+                this.startLoading();
                 const data = JSON.stringify({
                     email: this.server.email,
                     discordWebHook: this.server.discordWebHook,
@@ -224,33 +230,32 @@
                     reportsLocation: this.server.reportsLocation,
                 });
                 const vm = this;
-                const serial = settings.get('application.serial');
                 const url = this.$apiUrl + `/instances/update-server/${this.server.id}`;
-                const headers ={
-                    'X-DCS-SERIAL': serial
+                const headers = {
+                    'X-DCS-SERIAL': this.serial
                 };
-                this.$axios.put(url, data, {headers : headers})
-                    .then(response => {
-                        this.loading = false;
-                        const {status, message} = response.data;
-                        if (status === 0) {
-                            vm.closeDialog();
-                            vm.reloadServers();
-                            iziToast.info({title: 'Sender', message: message, position: 'topRight'});
-                        }else if (status === 999) {
-                            if (response.data.errors !== undefined && response.data.errors.length > 0) {
-                                for (let i = 0; i < response.data.errors.length; i++) {
-                                    iziToast.warning({title: 'Sender', message: response.data.errors[i], position: 'topRight'});
-                                }
+                this.$axios.put(url, data, {headers: headers}).then(response => {
+                    const {status, message} = response.data;
+                    if (status === 0) {
+                        vm.closeDialog();
+                        vm.reloadServers();
+                        iziToast.info({title: 'Sender', message: message, position: 'topRight'});
+                    } else if (status === 999) {
+                        if (response.data.errors !== undefined && response.data.errors.length > 0) {
+                            for (let i = 0; i < response.data.errors.length; i++) {
+                                iziToast.warning({
+                                    title: 'Sender',
+                                    message: response.data.errors[i],
+                                    position: 'topRight'
+                                });
                             }
-                            iziToast.error({title: 'Sender', message: message, position: 'topRight'});
                         }
-                        else {
-                            iziToast.warning({title: 'Sender', message: message, position: 'topRight'});
-                        }
-                    })
+                        iziToast.error({title: 'Sender', message: message, position: 'topRight'});
+                    } else {
+                        iziToast.warning({title: 'Sender', message: message, position: 'topRight'});
+                    }
+                })
                     .catch(err => {
-                        this.loading = false;
                         iziToast.error({
                             title: 'Sender',
                             message: err.toString(),
@@ -258,7 +263,9 @@
                         });
                         log.info(err.toString());
                     })
-                ;
+                    .finally(() => {
+                        this.stopLoading();
+                    });
                 this.closeDialog();
             },
             closeDialog() {
@@ -288,10 +295,10 @@
                 const WIN = remote.getCurrentWindow();
                 const vm = this;
                 let options = {
-                    title : "Select SRS file",
-                    defaultPath : remote.app.getPath('documents'),
-                    buttonLabel : "Select",
-                    filters :[
+                    title: "Select SRS file",
+                    defaultPath: remote.app.getPath('documents'),
+                    buttonLabel: "Select",
+                    filters: [
                         {name: 'JSON files', extensions: ['json']},
                         {name: 'All Files', extensions: ['*']}
                     ],
@@ -306,10 +313,10 @@
                 const WIN = remote.getCurrentWindow();
                 const vm = this;
                 let options = {
-                    title : "Select DCS World reports folder",
-                    defaultPath : remote.app.getPath('documents'),
-                    buttonLabel : "Select",
-                    filters :[
+                    title: "Select DCS World reports folder",
+                    defaultPath: remote.app.getPath('documents'),
+                    buttonLabel: "Select",
+                    filters: [
                         {name: 'All Files', extensions: ['*']}
                     ],
                     properties: ['openDirectory']
@@ -323,7 +330,7 @@
     }
 </script>
 <style type="scss">
-    card.server-card:hover{
-        cursor:grabbing !important;
+    card.server-card:hover {
+        cursor: grabbing !important;
     }
 </style>

@@ -1,19 +1,10 @@
 <template>
     <v-row class="mt-4">
-        <Loader :is-loading="loading" />
-        <v-expansion-panels inset
-                :accordion="accordion"
-                :popout="popout"
-                :multiple="multiple"
-                :focusable="focusable"
-                :disabled="disabled"
-                :readonly="readonly"
-                :flat="flat"
-                :hover="hover"
-                :tile="tile"
-        >
+        <v-expansion-panels inset :accordion="false" :popout="false" :multiple="false"
+                            :focusable="false" :disabled="false" :readonly="false" :flat="false"
+                            :hover="true" :tile="false">
             <v-expansion-panel v-for="(question, i) in questions" :key="i">
-                <v-expansion-panel-header  class="text-left">
+                <v-expansion-panel-header class="text-left">
                     <template v-slot:actions>
                         <v-icon color="primary">mdi-arrow-down-bold-circle</v-icon>
                     </template>
@@ -33,40 +24,33 @@
 </template>
 
 <script>
-    import settings from 'electron-settings';
-    import Loader from "../components/Loader";
+    import {mapState, mapActions} from 'vuex';
 
     export default {
         name: "Faq",
-        components: {Loader},
+        computed: {
+            ...mapState(['serial']),
+        },
         data() {
             return {
-                loading: false,
-                accordion: false,
-                popout: false,
-                inset: false,
-                multiple: false,
-                disabled: false,
-                readonly: false,
-                focusable: false,
-                flat: false,
-                hover: true,
-                tile: false,
                 questions: [],
             };
         },
         mounted() {
-            this.loading = true;
+            this.startLoading();
             const url = `${this.$apiUrl}/faq/list`;
             const headers = {
-                'X-DCS-SERIAL': settings.get('application.serial'),
+                'X-DCS-SERIAL': this.serial,
             };
-            this.$axios.get(url, {headers : headers}).then(response => {
+            this.$axios.get(url, {headers: headers}).then(response => {
                 this.questions = response.data.questions;
             }).finally(() => {
-                this.loading = false;
+                this.stopLoading();
             });
-        }
+        },
+        methods: {
+            ...mapActions(["startLoading", "stopLoading"]),
+        },
     }
 </script>
 
