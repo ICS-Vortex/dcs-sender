@@ -10,10 +10,16 @@ npm install
 npm run serve
 ```
 
-### Compiles and minifies for production
+### Compiles and minifies and generates EXE file
 ```
 npm run build
 ```
+
+### Publish source code and exe file to Github repo
+```
+npm run publish
+```
+
 
 ### Lints and fixes files
 ```
