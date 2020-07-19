@@ -32,9 +32,12 @@ function createWindow() {
     win = new BrowserWindow(options);
 
     win.setMenu(null);
+    //win.webContents.openDevTools(); //TODO remove
     if (process.env.WEBPACK_DEV_SERVER_URL) {
         win.loadURL(process.env.WEBPACK_DEV_SERVER_URL);
-        if (!process.env.IS_TEST) win.webContents.openDevTools()
+        if (!process.env.IS_TEST) {
+            win.webContents.openDevTools();
+        }
     } else {
         createProtocol('app');
         win.loadURL('app://./index.html');
