@@ -26,6 +26,10 @@
                     <v-icon class="mr-1">mdi-cog-outline</v-icon>
                     Settings
                 </v-btn>
+                <v-btn class="menu-btn" text @click="resetSerial()">
+                    <v-icon class="mr-1">mdi-lock-reset</v-icon>
+                    Reset
+                </v-btn>
             </v-toolbar-items>
         </v-app-bar>
         <v-main>
@@ -41,7 +45,7 @@
 
 <script>
     import {shell} from "electron";
-    import {mapState} from 'vuex';
+    import {mapState, mapActions} from 'vuex';
 
     export default {
         name: "ApplicationComponent",
@@ -51,6 +55,7 @@
             ]),
         },
         methods: {
+            ...mapActions(['resetSerial']),
             openWebsite(link) {
                 shell.openExternal(link);
             },

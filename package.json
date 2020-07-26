@@ -21,6 +21,7 @@
     "core-js": "^3.6.5",
     "electron-download-manager": "^2.1.2",
     "js-async-queue": "^1.0.6",
+    "message-socket": "^1.0.4",
     "node-pre-gyp": "^0.14.0",
     "vue": "^2.6.10",
     "vue-moment": "^4.1.0",

@@ -29,6 +29,10 @@ export default new Vuex.Store({
         SET_AMQP: (state, payload) => {
             state.amqp = payload;
         },
+        RESET_SERIAL: (state) => {
+            state.serial = null;
+            settings.set('application.serial', null);
+        },
     },
     actions: {
         startLoading: (context) => {
@@ -42,6 +46,10 @@ export default new Vuex.Store({
         },
         setAmqp: (context, payload) => {
             context.commit('SET_AMQP', payload);
+        },
+        resetSerial: (context) => {
+            context.commit('RESET_SERIAL');
+            context.commit('SET_AUTHENTICATED', false);
         },
     }
 });

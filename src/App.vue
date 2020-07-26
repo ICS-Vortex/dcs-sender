@@ -32,9 +32,6 @@
                 verificationFailed: false,
             }
         },
-        created() {
-
-        },
         mounted() {
             this.validateSerial();
             let logsPath;
