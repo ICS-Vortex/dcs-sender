@@ -40,7 +40,7 @@
                     <tr v-for="(message, i) in messages" :key="i"
                         :class="message.success === false ? 'red white--text' : ''">
                         <td>{{new Date | moment('YYYY-MM-DD hh:hh:ss')}}</td>
-                        <td><b>{{message.text}}</b></td>
+                        <td v-html="message.text"></td>
                     </tr>
                     <tr id="last-row">
                         <td colspan="2"/>
@@ -116,11 +116,8 @@
                 });
             },
             connectToAMQP() {
-                const vm = this;
-                if (this.amqp === null) {
-                    return;
-                }
-                vm.loading = true;
+                if (!this.amqp) return;
+                this.loading = true;
                 this.appendToTable({text: 'Attempting to connect to VFP queue service...'}, true, true);
 
                 const options = {
@@ -140,20 +137,20 @@
                 const connectionOptions = {
                     reconnect: false,
                 };
-                vm.amqpConnection = amqp.createConnection(options, connectionOptions);
+                this.amqpConnection = amqp.createConnection(options, connectionOptions);
 
-                vm.amqpConnection.on('error', err => {
-                    vm.loading = false;
+                this.amqpConnection.on('error', err => {
+                    this.loading = false;
                     log.error("Error from amqp: ", err);
-                    vm.stopSender();
-                    vm.appendToTable({text: 'Failed to connect to VFP queue service'}, false, true);
+                    this.stopSender();
+                    this.appendToTable({text: 'Failed to connect to VFP queue service'}, false, true);
                 });
 
-                vm.amqpConnection.on('ready', () => {
-                    vm.loading = false;
+                this.amqpConnection.on('ready', () => {
+                    this.loading = false;
                     iziToast.success({title: 'Sender', message: 'Connected to VFP queue service', position: 'topRight'});
-                    vm.amqpConnected = true;
-                    vm.startSender();
+                    this.amqpConnected = true;
+                    this.startSender();
                 });
             },
             reloadServers() {
@@ -284,7 +281,14 @@
                 }
                 event.server = {identifier: server.identifier};
                 const content = JSON.stringify(event);
-                this.amqpConnection.publish('json_messages', content)
+                try{
+                    this.amqpConnection.publish('json_messages', content);
+                    this.appendToTable({text: `Event <b>${event.event.toUpperCase()}</b>  sent to queue`}, true, false);
+                }
+                catch (err) {
+                    this.appendToTable({text: 'Failed to connect to VFP queue service'}, true, false);
+                    log.error(err)
+                }
             },
             sendSrsData(server) {
                 let srsFile = server.srsFile;
@@ -329,6 +333,7 @@
                         });
                         this.servers[i].jsonWatcher
                             .on('add', (path) => {
+                                this.appendToTable({text: `Detected file: <b>${path}</b>`}, true, false);
                                 if (this.isJsonFile(path)) {
                                     if (!this.ignoreFile(path)) {
                                         let event = this.getEventFromFile(path);
@@ -346,6 +351,8 @@
                                     } else {
                                         this.deleteFile(path);
                                     }
+                                } else {
+                                    this.appendToTable({text: `File ${path} is not a valid report. Ignoring...`}, false, false);
                                 }
                                 if (fs.existsSync(srsFile)) {
                                     this.sendSrsData(this.servers[i]);
