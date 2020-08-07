@@ -32,6 +32,8 @@ function createWindow() {
     win = new BrowserWindow(options);
 
     win.setMenu(null);
+    win.maximize();
+    win.setFullScreen(false);
     win.webContents.openDevTools(); //TODO remove
     if (process.env.WEBPACK_DEV_SERVER_URL) {
         win.loadURL(process.env.WEBPACK_DEV_SERVER_URL);

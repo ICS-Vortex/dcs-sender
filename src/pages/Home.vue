@@ -2,7 +2,7 @@
     <div>
         <Loader :is-loading="loading"></Loader>
         <v-card>
-            <v-card-title>Transferring UI <v-btn @click="connectToAMQP()" class="ml-2">Connect</v-btn> </v-card-title>
+            <v-card-title>Transferring UI <v-btn @click="connectToAMQP()" class="ml-2">Connect to queue</v-btn> </v-card-title>
             <v-card-text>
                 <v-row>
                     <v-col>
@@ -137,7 +137,6 @@
                     }
                 };
 
-                log.info('Connection options:', options);
                 const connectionOptions = {
                     reconnect: false,
                 };
@@ -155,7 +154,6 @@
                     iziToast.success({title: 'Sender', message: 'Connected to VFP queue service', position: 'topRight'});
                     vm.amqpConnected = true;
                     vm.startSender();
-                    log.info(`AMQP - Connected to ${options.host}:${options.port}`)
                 });
             },
             reloadServers() {
@@ -165,11 +163,9 @@
                     'X-DCS-SERIAL': serial
                 };
                 const url = this.$apiUrl + `/instances/get-servers`;
-                log.info(`Pulling servers data from ${url} url...`);
                 this.$axios.get(url, {headers: headers})
                     .then(response => {
                         vm.servers = response.data;
-                        log.info(`Server info loaded. Found ${vm.servers.length} servers`);
                         if (vm.servers.length > 0) {
                             vm.connectToAMQP();
                         }
@@ -195,7 +191,7 @@
                 }
             },
             openLogs() {
-                shell.openItem(settings.get('application.logs_path'));
+                shell.openPath(settings.get('application.logs_path'));
             },
             isJsonFile(file) {
                 return file.includes('.json');
@@ -246,17 +242,14 @@
                     this.stopSender();
                     return false;
                 }
-                log.info('Starting sender');
                 if (!this.startIsAllowed()) {
                     log.error('Failed to start sender');
                     return;
                 }
                 this.messages = [];
-                log.info('Sender started. Initializing options and sendData interval...');
                 this.sending = true;
                 this.startBtnDisabled = true;
                 this.stopBtnDisabled = false;
-                log.info('Done');
                 this.startWatchers();
             },
             stopSender(notify = false, server = null) {
@@ -265,11 +258,8 @@
                 this.stopBtnDisabled = true;
                 this.stopWatchers();
                 if (notify === true && server !== null) {
-                    log.info('Notifying server admin about stopped sender...');
                     this.sendEmail(server, '[DCSSender] Sender stopped', 'Sender stopped. Please, check it.');
-                    log.info('Notification sent.');
                 }
-                log.info('Sender stopped');
             },
             getEventFromFile(file) {
                 if (!fs.existsSync(file)) {
@@ -292,7 +282,6 @@
                     }, false, true);
                     return;
                 }
-                log.info('Sending ' + event.event.toUpperCase() + ' event data');
                 event.server = {identifier: server.identifier};
                 const content = JSON.stringify(event);
                 this.amqpConnection.publish('json_messages', content)
@@ -300,7 +289,6 @@
             sendSrsData(server) {
                 let srsFile = server.srsFile;
                 if (srsFile === null) {
-                    log.info('SRS file is not set.');
                     return false;
                 }
                 srsFile = srsFile.toString();
@@ -312,7 +300,6 @@
                         identifier: server.identifier,
                     };
                     this.amqpConnection.publish('json_messages', content)
-                    log.info('SRS event done');
                     this.messages.unshift({text: 'SRS event done'});
                 } catch (e) {
                     log.error(e.toString());
@@ -326,7 +313,6 @@
                         });
                         continue;
                     }
-                    log.info(`Processing server ${this.servers[i].name}`);
                     const srsFile = this.servers[i].srsFile;
                     const folder = this.servers[i].reportsLocation;
                     if (folder === null) {
@@ -343,7 +329,6 @@
                         });
                         this.servers[i].jsonWatcher
                             .on('add', (path) => {
-                                log.info('Detected ne JSON file: ', path);
                                 if (this.isJsonFile(path)) {
                                     if (!this.ignoreFile(path)) {
                                         let event = this.getEventFromFile(path);
@@ -357,7 +342,6 @@
                                                 success: false,
                                             });
                                             this.deleteFile(path);
-                                            log.info(`File ${path} deleted`);
                                         }
                                     } else {
                                         this.deleteFile(path);
@@ -397,9 +381,7 @@
             },
             deleteFile(file) {
                 try {
-                    log.info('Deleting file: ' + file);
                     fs.unlinkSync(file);
-                    log.info('Done');
                     return true;
                 } catch (e) {
                     return false;
@@ -407,7 +389,6 @@
             },
             sendEmail(server, subject, message) {
                 const url = this.$apiUrl + '/open/emails/send';
-                log.info('Sending email request to url: ' + url);
                 let recipients = [server.email];
                 let data = {
                     subject: subject,
@@ -415,7 +396,6 @@
                     recipients: recipients
                 };
                 this.axios.post(url, JSON.stringify(data)).then(() => {
-                    log.info('Request sent.');
                     iziToast.info({
                         title: 'System',
                         message: 'Notification email sent',
