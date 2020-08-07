@@ -32,7 +32,7 @@ function createWindow() {
     win = new BrowserWindow(options);
 
     win.setMenu(null);
-    //win.webContents.openDevTools(); //TODO remove
+    win.webContents.openDevTools(); //TODO remove
     if (process.env.WEBPACK_DEV_SERVER_URL) {
         win.loadURL(process.env.WEBPACK_DEV_SERVER_URL);
         if (!process.env.IS_TEST) {
@@ -101,12 +101,11 @@ autoUpdater.on('update-not-available', () => {
 autoUpdater.on('error', (err) => {
     sendStatusToWindow('Error in auto-updater. ' + err);
 })
-autoUpdater.on('download-progress', () => {
-    //progressObj
-    // let log_message = "Download speed: " + progressObj.bytesPerSecond;
-    // log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
-    // log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
-    // sendStatusToWindow(log_message);
+autoUpdater.on('download-progress', (progressObj) => {
+    let log_message = "Download speed: " + progressObj.bytesPerSecond;
+    log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
+    log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
+    sendStatusToWindow(log_message);
 })
 autoUpdater.on('update-downloaded', () => {
     const options = {

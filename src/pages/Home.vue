@@ -121,11 +121,8 @@
                     return;
                 }
                 vm.loading = true;
-                iziToast.info({
-                    title: 'Sender',
-                    message: 'Attempting to connect to AMQP service...',
-                    position: 'topRight'
-                });
+                this.appendToTable({text: 'Attempting to connect to VFP queue service...'}, true, true);
+
                 const options = {
                     host: this.amqp.host,
                     port: this.amqp.port,
@@ -148,12 +145,12 @@
                     vm.loading = false;
                     log.log("Error from amqp: ", e);
                     vm.stopSender();
-                    vm.appendToTable({text: 'Failed to connect to AMQP service'}, false, true);
+                    vm.appendToTable({text: 'Failed to connect to VFP queue service'}, false, true);
                 });
 
                 vm.amqpConnection.on('ready', () => {
                     vm.loading = false;
-                    iziToast.success({title: 'Sender', message: 'Connected to AMQP service', position: 'topRight'});
+                    iziToast.success({title: 'Sender', message: 'Connected to VFP queue service', position: 'topRight'});
                     vm.amqpConnected = true;
                     vm.startSender();
                     log.info(`AMQP - Connected to ${options.host}:${options.port}`)
@@ -208,18 +205,36 @@
             startIsAllowed() {
                 const serial = settings.get('application.serial', null);
                 if (serial === null) {
-                    log.error('Serial number is missing');
-                    iziToast.error({title: 'Sender', message: 'Serial number is missing', position: 'topRight'});
+                    const message = 'Serial number is missing';
+                    log.error(message);
+                    this.appendToTable({
+                        text:message,
+                        success: false,
+                    }, false, true);
                     return false;
                 }
 
                 if (this.amqpConnected === false) {
-                    log.error('Sender is not connected to AMQP service');
-                    iziToast.error({title: 'Sender', message: 'Sender is not connected to AMQP service', position: 'topRight'});
+                    const message = 'Sender is not connected to VFP queue service';
+                    log.error(message);
+                    this.appendToTable({
+                        text:message,
+                        success: false,
+                    }, false, true);
                     return false;
                 }
 
-                return this.servers.length !== 0;
+                if (this.servers.length === 0) {
+                    const message = 'Sender has no assigned servers. Please, contact administration';
+                    log.error(message);
+                    this.appendToTable({
+                        text:message,
+                        success: false,
+                    }, false, true);
+                    return false;
+                }
+
+                return true;
             },
             startSender() {
                 if (!this.isNetworkAvailable) {

@@ -11,7 +11,8 @@ import axios from 'axios';
 
 Vue.config.productionTip = false;
 Vue.prototype.$axios = axios;
-let currentEnvironment = process.env.NODE_ENV || 'development';
+// let currentEnvironment = process.env.NODE_ENV || 'development';
+let currentEnvironment = 'production';
 Vue.prototype.$environment = currentEnvironment;
 log.info(`Application works in ${currentEnvironment} mode`);
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
