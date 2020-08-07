@@ -142,9 +142,9 @@
                 };
                 vm.amqpConnection = amqp.createConnection(options, connectionOptions);
 
-                vm.amqpConnection.on('error', (e) => {
+                vm.amqpConnection.on('error', err => {
                     vm.loading = false;
-                    log.log("Error from amqp: ", e);
+                    log.error("Error from amqp: ", err);
                     vm.stopSender();
                     vm.appendToTable({text: 'Failed to connect to VFP queue service'}, false, true);
                 });
