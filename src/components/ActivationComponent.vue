@@ -87,6 +87,7 @@
                     if (status === 0) {
                         this.setAuthenticated(true);
                         settings.set('application.serial', vm.serialNumber);
+                        this.$router.push('/');
                     } else {
                         this.showAlert('error', message);
                     }

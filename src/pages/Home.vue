@@ -2,7 +2,7 @@
     <div>
         <Loader :is-loading="loading"></Loader>
         <v-card>
-            <v-card-title>Transferring UI</v-card-title>
+            <v-card-title>Transferring UI <v-btn @click="connectToAMQP()" class="ml-2">Connect</v-btn> </v-card-title>
             <v-card-text>
                 <v-row>
                     <v-col>
@@ -128,7 +128,7 @@
                     port: this.amqp.port,
                     login: this.amqp.username,
                     password: this.amqp.password,
-                    connectionTimeout: 10000,
+                    connectionTimeout: 3000,
                     authMechanism: 'AMQPLAIN',
                     vhost: '/',
                     noDelay: false,
@@ -136,6 +136,8 @@
                         enabled: false
                     }
                 };
+
+                log.info('Connection options:', options);
                 const connectionOptions = {
                     reconnect: false,
                 };
@@ -168,7 +170,9 @@
                     .then(response => {
                         vm.servers = response.data;
                         log.info(`Server info loaded. Found ${vm.servers.length} servers`);
-                        vm.connectToAMQP();
+                        if (vm.servers.length > 0) {
+                            vm.connectToAMQP();
+                        }
                     })
                     .catch(error => {
                         log.error(error.toString());
@@ -221,6 +225,7 @@
                         text:message,
                         success: false,
                     }, false, true);
+                    this.connectToAMQP();
                     return false;
                 }
 

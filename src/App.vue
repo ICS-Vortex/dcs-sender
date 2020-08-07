@@ -71,6 +71,7 @@
                     let {status} = response.data;
                     if (status === 0) {
                         this.setAuthenticated(true);
+                        this.$router.push('/');
                     }
                 }).catch((e) => {
                     log.error(e);

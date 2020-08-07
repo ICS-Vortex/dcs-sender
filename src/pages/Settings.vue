@@ -78,7 +78,7 @@
 
                     <v-card-actions>
                         <v-btn @click="findSrsFile">Set SRS file</v-btn>
-                        <v-btn @click="findSrsFolder">Set reports folder</v-btn>
+                        <v-btn @click="findReportsFolder">Set reports folder</v-btn>
                         <v-spacer/>
                         <v-btn dark color="secondary" @click="saveInstance">Save</v-btn>
                         <v-btn color="error" @click="closeDialog">Close</v-btn>
@@ -305,11 +305,13 @@
                     properties: ['openFile']
                 };
 
-                remote.dialog.showOpenDialog(WIN, options, (filePath) => {
-                    vm.server.srsFile = filePath[0];
-                })
+                remote.dialog.showOpenDialog(WIN, options).then(data => {
+                    if (!data.canceled) {
+                        vm.server.srsFile = data.filePaths[0];
+                    }
+                });
             },
-            findSrsFolder() {
+            findReportsFolder() {
                 const WIN = remote.getCurrentWindow();
                 const vm = this;
                 let options = {
@@ -322,9 +324,11 @@
                     properties: ['openDirectory']
                 };
 
-                remote.dialog.showOpenDialog(WIN, options, (folderPath) => {
-                    vm.server.reportsLocation = folderPath[0];
-                })
+                remote.dialog.showOpenDialog(WIN, options).then(data => {
+                    if (!data.canceled) {
+                        vm.server.reportsLocation = data.filePaths[0];
+                    }
+                });
             },
         }
     }
