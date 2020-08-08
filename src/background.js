@@ -3,7 +3,6 @@
 import {app, protocol, BrowserWindow, dialog, nativeImage} from 'electron';
 import log from 'electron-log';
 import { autoUpdater } from "electron-updater";
-import path from 'path';
 import {
     createProtocol
 } from 'vue-cli-plugin-electron-builder/lib';
