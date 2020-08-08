@@ -13,13 +13,16 @@ export default new Vuex.Store({
         authenticated: false,
         serial: settings.get('application.serial', null),
         amqp: null,
+        amqpConnected: false,
     },
     getters: {
-        getAmqpConnectionData: (state) => {
-            return state.amqp;
-        },
+        getAmqpConnected: state => state.amqpConnected,
+        getAmqpConnectionData: state => state.amqp,
     },
     mutations: {
+        SET_AMQP_CONNECTED: (state, connected) => {
+            state.amqpConnected = connected;
+        },
         SET_LOADING: (state, load) => {
             state.loading = load;
         },
@@ -35,6 +38,9 @@ export default new Vuex.Store({
         },
     },
     actions: {
+        setAmqpConnected: (context, connected) => {
+            context.commit('SET_AMQP_CONNECTED', connected);
+        },
         startLoading: (context) => {
             context.commit('SET_LOADING', true);
         },

@@ -2,7 +2,12 @@
     <div>
         <Loader :is-loading="loading"></Loader>
         <v-card>
-            <v-card-title>Transferring UI <v-btn @click="connectToAMQP()" class="ml-2">Connect to queue</v-btn> </v-card-title>
+            <v-card-title>Transferring UI
+                <v-btn :disabled="amqpConnected" @click="connectToAMQP()" class="ml-2">
+                    <v-icon class="mr-1">mdi-refresh-circle</v-icon>
+                    Connect to queue
+                </v-btn>
+            </v-card-title>
             <v-card-text>
                 <v-row>
                     <v-col>
@@ -29,7 +34,7 @@
                         </v-btn>
                     </v-col>
                 </v-row>
-                <v-simple-table height="420">
+                <v-simple-table height="70vh">
                     <thead>
                     <tr>
                         <th class="text-left">Time</th>
@@ -67,13 +72,19 @@
         name: 'home',
         components: {Loader},
         computed: {
-            ...mapState(['amqp', 'serial']),
+            ...mapState(['amqp', 'serial', 'amqpConnected']),
+        },
+        watch: {
+            amqpConnected: connected => {
+                if (!connected) {
+                    this.connectToAMQP();
+                }
+            }
         },
         data() {
             return {
                 loading: false,
                 amqpConnection: null,
-                amqpConnected: false,
                 startBtnDisabled: false,
                 stopBtnDisabled: true,
                 servers: [],
@@ -93,7 +104,7 @@
             this.stopWatchers();
         },
         methods: {
-            ...mapActions(['setAmqp']),
+            ...mapActions(['setAmqp', 'setAmqpConnected']),
             loadCredentialsData() {
                 this.$axios.get(this.$apiUrl + '/instances/get-credentials-data', {
                     headers: {
@@ -141,6 +152,7 @@
 
                 this.amqpConnection.on('error', err => {
                     this.loading = false;
+                    this.setAmqpConnected(false);
                     log.error("Error from amqp: ", err);
                     this.stopSender();
                     this.appendToTable({text: 'Failed to connect to VFP queue service'}, false, true);
@@ -149,7 +161,7 @@
                 this.amqpConnection.on('ready', () => {
                     this.loading = false;
                     iziToast.success({title: 'Sender', message: 'Connected to VFP queue service', position: 'topRight'});
-                    this.amqpConnected = true;
+                    this.setAmqpConnected(true);
                     this.startSender();
                 });
             },

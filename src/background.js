@@ -33,7 +33,7 @@ function createWindow() {
     win.setMenu(null);
     win.maximize();
     win.setFullScreen(false);
-    win.webContents.openDevTools(); //TODO remove
+    // win.webContents.openDevTools(); //TODO remove
     if (process.env.WEBPACK_DEV_SERVER_URL) {
         win.loadURL(process.env.WEBPACK_DEV_SERVER_URL);
         if (!process.env.IS_TEST) {
@@ -63,8 +63,10 @@ app.on('activate', async () => {
 
 app.on('ready', () => {
     createWindow();
-    updatesInterval = setInterval(() => {
-        autoUpdater.checkForUpdatesAndNotify();
+    setInterval(() => {
+        autoUpdater.checkForUpdates().then(data => {
+            log.info(data.updateInfo.releaseNotes);
+        });
     }, 1000 * 15);
 });
 
@@ -82,42 +84,29 @@ if (isDevelopment) {
     }
 }
 
-function sendStatusToWindow(text) {
-    log.info(text);
-    win.webContents.send('message', text);
-}
-
 autoUpdater.on('checking-for-update', () => {
-    sendStatusToWindow('Checking for update...');
-})
+    log.info('Checking for update...');
+});
 
 autoUpdater.on('update-available', () => {
-    clearInterval(updatesInterval);
    autoUpdater.downloadUpdate();
-})
+});
 
 autoUpdater.on('update-not-available', () => {
-    sendStatusToWindow('Update not available.');
-})
+    log.info('Update not available.');
+});
+
 autoUpdater.on('error', (err) => {
-    sendStatusToWindow('Error in auto-updater. ' + err);
-})
+    log.info('Error in auto-updater. ' + err);
+});
+
 autoUpdater.on('download-progress', (progressObj) => {
     let log_message = "Download speed: " + progressObj.bytesPerSecond;
     log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
     log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
-    sendStatusToWindow(log_message);
-})
+    log.info(log_message);
+});
+
 autoUpdater.on('update-downloaded', () => {
-    const options = {
-        type: 'info',
-        message: 'Update available. Do you want to update sender?',
-        title: 'DCS Sender Updater',
-        buttons: ["Yes","No","Cancel"],
-    };
-    dialog.showMessageBox(options, (res) => {
-        if (res === 0) {
-            autoUpdater.quitAndInstall();
-        }
-    });
+    autoUpdater.quitAndInstall();
 });

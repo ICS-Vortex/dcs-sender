@@ -57,17 +57,13 @@
             ...mapActions(['setAuthenticated', 'startLoading', 'stopLoading']),
             validateSerial() {
                 this.startLoading();
-                log.info('Validating serial:', this.serial);
                 if (this.serial === null) {
                     this.stopLoading();
-                    log.info('Serial is empty. Its a first app launch. Loading ActivationComponent');
                     this.setAuthenticated(false);
                     return;
                 }
-                log.info('Starting validation request');
                 const rConfig = {headers: {'X-DCS-SERIAL': this.serial}};
                 this.$axios.post(this.$apiUrl + '/instances/validate', null, rConfig).then(response => {
-                    log.info('Response code is ', response.status);
                     let {status} = response.data;
                     if (status === 0) {
                         this.setAuthenticated(true);
