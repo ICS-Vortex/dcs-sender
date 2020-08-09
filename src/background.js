@@ -16,8 +16,6 @@ function createWindow() {
     let image = nativeImage.createFromPath(__dirname + '/public/logo.png');
     image.setTemplateImage(true);
     let options = {
-        width: 1200,
-        height: 600,
         icon: image,
         webPreferences: {
             nodeIntegration: true,
@@ -28,12 +26,13 @@ function createWindow() {
     if ((process.env.NODE_ENV || 'development') === 'development') {
         options.webPreferences.devTools = true;
     }
+
     win = new BrowserWindow(options);
 
     win.setMenu(null);
     win.maximize();
     win.setFullScreen(false);
-    win.webContents.openDevTools(); //TODO remove
+    // win.webContents.openDevTools(); //TODO remove
     if (process.env.WEBPACK_DEV_SERVER_URL) {
         win.loadURL(process.env.WEBPACK_DEV_SERVER_URL);
         if (!process.env.IS_TEST) {
@@ -92,19 +91,8 @@ autoUpdater.on('update-available', () => {
    autoUpdater.downloadUpdate();
 });
 
-autoUpdater.on('update-not-available', () => {
-    log.info('Update not available.');
-});
-
 autoUpdater.on('error', (err) => {
-    log.info('Error in auto-updater. ' + err);
-});
-
-autoUpdater.on('download-progress', (progressObj) => {
-    let log_message = "Download speed: " + progressObj.bytesPerSecond;
-    log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
-    log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
-    log.info(log_message);
+    log.info('Error in auto-updater:' + err.message);
 });
 
 autoUpdater.on('update-downloaded', () => {
