@@ -4,11 +4,14 @@ import CompositionApi from "@vue/composition-api";
 import vuetify from './plugins/vuetify';
 import store from "./plugins/store";
 import router from './router'
+import PerfectScrollbar from 'vue2-perfect-scrollbar';
+import 'vue2-perfect-scrollbar/dist/vue2-perfect-scrollbar.css';
 import 'izitoast/dist/css/iziToast.min.css';
 import '@/assets/css/style.scss';
 import axios from 'axios';
 
-let currentEnvironment = process.env.NODE_ENV || 'development';
+// let currentEnvironment = process.env.NODE_ENV || 'development';
+let currentEnvironment = 'production';
 
 Vue.config.productionTip = false;
 Vue.prototype.$axios = axios;
@@ -29,8 +32,8 @@ switch (currentEnvironment) {
 
 Vue.prototype.$apiUrl = Vue.prototype.$host + '/api';
 
-Vue.use(require('vue-moment'));
 Vue.use(CompositionApi);
+Vue.use(PerfectScrollbar);
 
 new Vue({
     store,

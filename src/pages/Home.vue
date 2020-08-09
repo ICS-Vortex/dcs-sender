@@ -34,24 +34,23 @@
                         </v-btn>
                     </v-col>
                 </v-row>
-                <v-simple-table height="70vh">
-                    <thead>
-                    <tr>
-                        <th class="text-left">Time</th>
-                        <th class="text-left">Message</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr v-for="(message, i) in messages" :key="i"
-                        :class="message.success === false ? 'red white--text' : ''">
-                        <td>{{new Date | moment('YYYY-MM-DD hh:hh:ss')}}</td>
-                        <td v-html="message.text"></td>
-                    </tr>
-                    <tr id="last-row">
-                        <td colspan="2"/>
-                    </tr>
-                    </tbody>
-                </v-simple-table>
+                <perfect-scrollbar class="scroll">
+                    <v-simple-table>
+                        <thead>
+                        <tr>
+                            <th class="text-left">Time</th>
+                            <th class="text-left">Message</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="(message, i) in messages" :key="i"
+                            :class="message.success === false ? 'red white--text' : ''">
+                            <td v-html="message.time" />
+                            <td v-html="message.text" />
+                        </tr>
+                        </tbody>
+                    </v-simple-table>
+                </perfect-scrollbar>
             </v-card-text>
         </v-card>
     </div>
@@ -129,7 +128,7 @@
             connectToAMQP() {
                 if (!this.amqp) return;
                 this.loading = true;
-                this.appendToTable({text: 'Attempting to connect to VFP queue service...'}, true, true);
+                this.println({text: 'Attempting to connect to VFP queue service...'}, true, true);
 
                 const options = {
                     host: this.amqp.host,
@@ -155,7 +154,7 @@
                     this.setAmqpConnected(false);
                     log.error("Error from amqp: ", err);
                     this.stopSender();
-                    this.appendToTable({text: 'Failed to connect to VFP queue service'}, false, true);
+                    this.println({text: 'Failed to connect to VFP queue service'}, false, true);
                 });
 
                 this.amqpConnection.on('ready', () => {
@@ -183,8 +182,9 @@
                         log.error(error.toString());
                     });
             },
-            appendToTable(message, success = true, show = false) {
+            println(message, success = true, show = false) {
                 message.success = success;
+                message.time =(new Date()).toISOString().replace(/T/, ' ').replace(/\..+/, '');
                 this.messages.unshift(message);
                 if (show) {
                     const data = {
@@ -216,7 +216,7 @@
                 if (serial === null) {
                     const message = 'Serial number is missing';
                     log.error(message);
-                    this.appendToTable({
+                    this.println({
                         text:message,
                         success: false,
                     }, false, true);
@@ -226,7 +226,7 @@
                 if (this.amqpConnected === false) {
                     const message = 'Sender is not connected to VFP queue service';
                     log.error(message);
-                    this.appendToTable({
+                    this.println({
                         text:message,
                         success: false,
                     }, false, true);
@@ -237,7 +237,7 @@
                 if (this.servers.length === 0) {
                     const message = 'Sender has no assigned servers. Please, contact administration';
                     log.error(message);
-                    this.appendToTable({
+                    this.println({
                         text:message,
                         success: false,
                     }, false, true);
@@ -285,7 +285,7 @@
             },
             sendEvent(server, event) {
                 if (!event.event) {
-                    this.appendToTable({
+                    this.println({
                         text: `Invalid JSON detected`,
                         success: false,
                     }, false, true);
@@ -295,10 +295,10 @@
                 const content = JSON.stringify(event);
                 try{
                     this.amqpConnection.publish('json_messages', content);
-                    this.appendToTable({text: `Event <b>${event.event.toUpperCase()}</b>  sent to queue`}, true, false);
+                    this.println({text: `Event <b>${event.event.toUpperCase()}</b>  sent to queue`}, true, false);
                 }
                 catch (err) {
-                    this.appendToTable({text: 'Failed to connect to VFP queue service'}, true, false);
+                    this.println({text: 'Failed to connect to VFP queue service'}, true, false);
                     log.error(err)
                 }
             },
@@ -345,7 +345,7 @@
                         });
                         this.servers[i].jsonWatcher
                             .on('add', (path) => {
-                                this.appendToTable({text: `Detected file: <b>${path}</b>`}, true, false);
+                                this.println({text: `Detected file: <b>${path}</b>`}, true, false);
                                 if (this.isJsonFile(path)) {
                                     if (!this.ignoreFile(path)) {
                                         let event = this.getEventFromFile(path);
@@ -354,7 +354,7 @@
                                             this.deleteFile(path);
                                         } else {
                                             log.error(`Failed to read file ${path}`);
-                                            this.appendToTable({
+                                            this.println({
                                                 text: `Failed to read file ${path}`,
                                                 success: false,
                                             });
@@ -364,14 +364,14 @@
                                         this.deleteFile(path);
                                     }
                                 } else {
-                                    this.appendToTable({text: `File ${path} is not a valid report. Ignoring...`}, false, false);
+                                    this.println({text: `File ${path} is not a valid report. Ignoring...`}, false, false);
                                 }
                                 if (fs.existsSync(srsFile)) {
                                     this.sendSrsData(this.servers[i]);
                                 }
                             });
                     } else {
-                        this.appendToTable({
+                        this.println({
                             text: `Folder ${folder} does not exists!`,
                             success: false,
                         }, false, true);

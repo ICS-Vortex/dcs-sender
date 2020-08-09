@@ -3,7 +3,7 @@
   "description": "Statistics transfer app",
   "license": "MIT",
   "author": "VFP Team",
-  "version": "1.5.8",
+  "version": "1.5.9",
   "private": true,
   "scripts": {
     "lint": "vue-cli-service lint",
@@ -24,8 +24,8 @@
     "message-socket": "^1.0.4",
     "node-pre-gyp": "^0.14.0",
     "vue": "^2.6.10",
-    "vue-moment": "^4.1.0",
     "vue-router": "^3.3.4",
+    "vue2-perfect-scrollbar": "^1.5.0",
     "vuetify": "^2.3.4",
     "vuex": "^3.5.1"
   },
