@@ -8,7 +8,7 @@ import {
 } from 'vue-cli-plugin-electron-builder/lib';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
-let win, updatesInterval;
+let win;
 
 protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: {secure: true, standard: true}}]);
 
@@ -33,7 +33,7 @@ function createWindow() {
     win.setMenu(null);
     win.maximize();
     win.setFullScreen(false);
-    // win.webContents.openDevTools(); //TODO remove
+    win.webContents.openDevTools(); //TODO remove
     if (process.env.WEBPACK_DEV_SERVER_URL) {
         win.loadURL(process.env.WEBPACK_DEV_SERVER_URL);
         if (!process.env.IS_TEST) {

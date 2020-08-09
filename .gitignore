@@ -4,6 +4,8 @@ node_modules
 package-lock.json
 
 # local env files
+.env.production
+.env
 .env.local
 .env.*.local
 
