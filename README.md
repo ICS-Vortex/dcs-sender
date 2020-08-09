@@ -1,4 +1,4 @@
-# dcs-sender
+# DCS Stats Sender
 
 ## Project setup
 ```
