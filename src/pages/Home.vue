@@ -155,6 +155,7 @@
                     log.error("Error from amqp: ", err);
                     this.stopSender();
                     this.println({text: 'Failed to connect to VFP queue service'}, false, true);
+                    this.sendEmail('[DCS Stats Sender] Error detected', 'Sender stopped. Please, check logs.');
                 });
 
                 this.amqpConnection.on('ready', () => {
@@ -406,15 +407,22 @@
                     return false;
                 }
             },
-            sendEmail(server, subject, message) {
-                const url = this.$apiUrl + '/open/emails/send';
-                let recipients = [server.email];
+            getRecipients() {
+                return this.servers.map(server => server.email).filter((value, index, self) => self.indexOf(value) === index);
+            },
+            sendEmail(subject, message) {
+                const url = this.$apiUrl + '/emails/send';
+                let recipients = this.getRecipients();
+                log.info(recipients);
+                if (recipients.length === 0 || !subject || !message) {
+                    return false;
+                }
                 let data = {
                     subject: subject,
                     body: message,
                     recipients: recipients
                 };
-                this.axios.post(url, JSON.stringify(data)).then(() => {
+                this.$axios.post(url, JSON.stringify(data)).then(() => {
                     iziToast.info({
                         title: 'System',
                         message: 'Notification email sent',
