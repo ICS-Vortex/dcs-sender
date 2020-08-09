@@ -65,7 +65,7 @@ app.on('ready', () => {
     createWindow();
     updatesInterval = setInterval(() => {
         autoUpdater.checkForUpdatesAndNotify();
-    }, 1000 * 10); // Check updates every 1 minutes
+    }, 1000 * 60 * 10); // Check updates every 1 minutes
 });
 
 if (isDevelopment) {
