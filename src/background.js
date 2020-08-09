@@ -3,16 +3,17 @@
 import {app, protocol, BrowserWindow, dialog, nativeImage} from 'electron';
 import log from 'electron-log';
 import { autoUpdater } from "electron-updater";
-import {
-    createProtocol
-} from 'vue-cli-plugin-electron-builder/lib';
+import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
-let win;
+let win, updatesInterval;
+
+const pjson = require('../package.json')
+let appversion = pjson.version;
 
 protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: {secure: true, standard: true}}]);
 
-function createWindow() {
+const createWindow = () => {
     let image = nativeImage.createFromPath(__dirname + '/public/logo.png');
     image.setTemplateImage(true);
     let options = {
@@ -62,11 +63,9 @@ app.on('activate', async () => {
 
 app.on('ready', () => {
     createWindow();
-    setInterval(() => {
-        autoUpdater.checkForUpdates().then(data => {
-            log.info(data.updateInfo.releaseNotes);
-        });
-    }, 1000 * 15);
+    updatesInterval = setInterval(() => {
+        autoUpdater.checkForUpdatesAndNotify();
+    }, 1000 * 10); // Check updates every 1 minutes
 });
 
 if (isDevelopment) {
@@ -84,17 +83,49 @@ if (isDevelopment) {
 }
 
 autoUpdater.on('checking-for-update', () => {
-    log.info('Checking for update...');
-});
+    sendStatusToWindow('Checking for update...', appversion);
+})
 
 autoUpdater.on('update-available', () => {
-   autoUpdater.downloadUpdate();
+    clearInterval(updatesInterval);
+    sendStatusToWindow('Update available.', appversion);
 });
+autoUpdater.on('update-not-available', () => {
+    sendStatusToWindow('Update not available.', appversion);
+})
 
 autoUpdater.on('error', (err) => {
     log.info('Error in auto-updater:' + err.message);
+    sendStatusToWindow('Error in auto-updater. ' + err, appversion);
 });
 
+const  sendStatusToWindow = (text, ver) => {
+    log.info(text);
+    win.webContents.send('message', text, ver);
+}
+
+autoUpdater.on('download-progress', (progressObj) => {
+    win.setProgressBar(progressObj.percent);
+    let log_message = "Download speed: " + progressObj.bytesPerSecond;
+    log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
+    log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
+    sendStatusToWindow(log_message, appversion);
+})
+
 autoUpdater.on('update-downloaded', () => {
-    autoUpdater.quitAndInstall();
+    clearInterval(updatesInterval);
+    dialog.showMessageBox({
+        title: 'DCS Stats Sender',
+        message: 'Do you want to install updates?',
+        buttons: ['Install updates', 'Cancel']
+    }).then(data => {
+        const {response} = data;
+        if (response === 0) {
+            autoUpdater.quitAndInstall();
+        }
+    });
 });
+
+autoUpdater.on('download-progress', (progressObj) => {
+    win.setProgressBar(progressObj.percent);
+})

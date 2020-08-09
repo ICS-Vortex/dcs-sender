@@ -6,15 +6,14 @@ import store from "./plugins/store";
 import router from './router'
 import 'izitoast/dist/css/iziToast.min.css';
 import '@/assets/css/style.scss';
-import log from 'electron-log';
 import axios from 'axios';
+
+let currentEnvironment = process.env.NODE_ENV || 'development';
 
 Vue.config.productionTip = false;
 Vue.prototype.$axios = axios;
-// let currentEnvironment = process.env.NODE_ENV || 'development';
-let currentEnvironment = 'production';
 Vue.prototype.$environment = currentEnvironment;
-log.info(`Application works in ${currentEnvironment} mode`);
+
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 switch (currentEnvironment) {
@@ -27,6 +26,7 @@ switch (currentEnvironment) {
     default:
         Vue.prototype.$host = 'http://vfp.site';
 }
+
 Vue.prototype.$apiUrl = Vue.prototype.$host + '/api';
 
 Vue.use(require('vue-moment'));
