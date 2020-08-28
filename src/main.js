@@ -10,8 +10,8 @@ import 'izitoast/dist/css/iziToast.min.css';
 import '@/assets/css/style.scss';
 import axios from 'axios';
 
-// let currentEnvironment = process.env.NODE_ENV || 'development';
-let currentEnvironment = 'production';
+let currentEnvironment = process.env.NODE_ENV || 'development';
+// let currentEnvironment = 'production';
 
 Vue.config.productionTip = false;
 Vue.prototype.$axios = axios;
@@ -24,13 +24,13 @@ switch (currentEnvironment) {
         Vue.prototype.$host = 'http://vfp.site';
         break;
     case 'production':
-        Vue.prototype.$host = 'https://vfpteam.com';
+        Vue.prototype.$host = 'https://api.vfpteam.com';
         break;
     default:
         Vue.prototype.$host = 'http://vfp.site';
 }
 
-Vue.prototype.$apiUrl = Vue.prototype.$host + '/api';
+Vue.prototype.$apiUrl = Vue.prototype.$host + '/api/open';
 
 Vue.use(CompositionApi);
 Vue.use(PerfectScrollbar);
