@@ -69,13 +69,8 @@
                         this.setAuthenticated(true);
                         this.$router.push('/');
                     }
-                }).catch((e) => {
-                    log.error(e);
-                    switch (e.response.status) {
-                        case 403:
-
-                            break;
-                    }
+                }).catch(e => {
+                    log.error(e.message);
                     this.serialNumber = this.serial;
                     this.setAuthenticated(false);
                 }).finally(() => {
