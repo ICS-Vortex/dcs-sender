@@ -10,8 +10,8 @@ import 'izitoast/dist/css/iziToast.min.css';
 import '@/assets/css/style.scss';
 import axios from 'axios';
 
-// let currentEnvironment = process.env.NODE_ENV || 'development';
-let currentEnvironment = 'production';
+let currentEnvironment = process.env.NODE_ENV || 'development';
+// let currentEnvironment = 'production';
 
 Vue.config.productionTip = false;
 Vue.prototype.$axios = axios;
