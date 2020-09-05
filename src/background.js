@@ -2,14 +2,17 @@
 
 import {app, protocol, BrowserWindow, dialog, nativeImage} from 'electron';
 import log from 'electron-log';
-import { autoUpdater } from "electron-updater";
-import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
-
-const isDevelopment = process.env.NODE_ENV !== 'production';
-let win, updatesInterval;
+import {autoUpdater} from "electron-updater";
+import {createProtocol} from 'vue-cli-plugin-electron-builder/lib';
 
 const pjson = require('../package.json')
+
 let appversion = pjson.version;
+let win, updatesInterval;
+
+const isDevelopment = process.env.NODE_ENV !== 'production';
+const restartTime = 1000 * 3600 * 8; //Restart sender every 8 hours
+const updateTime = 1000 * 60 * 10;     // Check updates every 10 minutes
 
 protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: {secure: true, standard: true}}]);
 
@@ -33,7 +36,6 @@ const createWindow = () => {
     win.setMenu(null);
     win.maximize();
     win.setFullScreen(false);
-    // win.webContents.openDevTools(); //TODO remove
     if (process.env.WEBPACK_DEV_SERVER_URL) {
         win.loadURL(process.env.WEBPACK_DEV_SERVER_URL);
         if (!process.env.IS_TEST) {
@@ -48,7 +50,6 @@ const createWindow = () => {
     })
 }
 
-// Quit when all windows are closed.
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit();
@@ -66,22 +67,26 @@ app.on('ready', () => {
     createWindow();
     updatesInterval = setInterval(() => {
         autoUpdater.checkForUpdatesAndNotify();
-    }, 1000 * 60 * 10); // Check updates every 10 minutes
+    }, updateTime);
+    setTimeout(() => {
+        app.relaunch();
+        app.quit();
+    }, restartTime);
 });
 
-// if (isDevelopment) {
-//     if (process.platform === 'win32') {
-//         process.on('message', data => {
-//             if (data === 'graceful-exit') {
-//                 app.quit()
-//             }
-//         })
-//     } else {
-//         process.on('SIGTERM', () => {
-//             app.quit()
-//         })
-//     }
-// }
+if (isDevelopment) {
+    if (process.platform === 'win32') {
+        process.on('message', data => {
+            if (data === 'graceful-exit') {
+                app.quit()
+            }
+        })
+    } else {
+        process.on('SIGTERM', () => {
+            app.quit()
+        })
+    }
+}
 
 autoUpdater.on('checking-for-update', () => {
     sendStatusToWindow('Checking for update...', appversion);
@@ -100,7 +105,7 @@ autoUpdater.on('error', (err) => {
     sendStatusToWindow('Error in auto-updater. ' + err, appversion);
 });
 
-const  sendStatusToWindow = (text, ver) => {
+const sendStatusToWindow = (text, ver) => {
     log.info(text);
     win.webContents.send('message', text, ver);
 }
