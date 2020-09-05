@@ -60,6 +60,7 @@ app.on('activate', async () => {
         createWindow();
     }
 });
+app.commandLine.appendSwitch('--no-sandbox')
 
 app.on('ready', () => {
     createWindow();
@@ -68,19 +69,19 @@ app.on('ready', () => {
     }, 1000 * 60 * 10); // Check updates every 10 minutes
 });
 
-if (isDevelopment) {
-    if (process.platform === 'win32') {
-        process.on('message', data => {
-            if (data === 'graceful-exit') {
-                app.quit()
-            }
-        })
-    } else {
-        process.on('SIGTERM', () => {
-            app.quit()
-        })
-    }
-}
+// if (isDevelopment) {
+//     if (process.platform === 'win32') {
+//         process.on('message', data => {
+//             if (data === 'graceful-exit') {
+//                 app.quit()
+//             }
+//         })
+//     } else {
+//         process.on('SIGTERM', () => {
+//             app.quit()
+//         })
+//     }
+// }
 
 autoUpdater.on('checking-for-update', () => {
     sendStatusToWindow('Checking for update...', appversion);
